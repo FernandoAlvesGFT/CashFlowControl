@@ -1,0 +1,87 @@
+services:
+  cashflowcontrol.dailyconsolidation.api:
+    image: fernandoribeiroalves/dailyconsolidation-api:develop-v1
+    build:
+      context: .
+      dockerfile: src/Services/CashFlowControl.DailyConsolidation.API/Dockerfile
+    ports:
+      - "7047:443"
+      - "5043:80"
+    depends_on:
+      - "sqlserver"
+      - "rabbitmq"
+      - "cashflowcontrol.launchcontrol.api"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CashFlowDb;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
+      - TransactionApiUrl=https://cashflowcontrol.launchcontrol.api:7253/api/Transaction
+      - RABBITMQ__HOST=rabbitmq
+      - RABBITMQ__USER=guest
+      - RABBITMQ__PASS=guest
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=102030@Certs
+    volumes:
+      - ./certs:/https:ro
+    networks:
+      - backend
+
+  cashflowcontrol.launchcontrol.api:
+    image: fernandoribeiroalves/launchcontrol-api:develop-v1
+    build:
+      context: .
+      dockerfile: src/Services/CashFlowControl.LaunchControl.API/Dockerfile
+    ports:
+      - "7253:443"
+      - "5166:80"
+    depends_on:
+      - "sqlserver"
+      - "rabbitmq"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CashFlowDb;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
+      - RABBITMQ__HOST=rabbitmq
+      - RABBITMQ__USER=guest
+      - RABBITMQ__PASS=guest
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=102030@Certs
+    volumes:
+      - ./certs:/https:ro
+    networks:
+      - backend
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=1809@Mudar
+    ports:
+      - "1433:1433"
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "1809@Mudar", "-Q", "SELECT 1"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+
+  rabbitmq:
+    image: "rabbitmq:management"
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+
+networks:
+  backend:
+    driver: bridge
