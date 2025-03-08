@@ -11,6 +11,7 @@ namespace CashFlowControl.Core.Infrastructure.Configurations.ResolveDI
         {
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
             builder.Services.AddScoped<IConsolidatedBalanceRepository, ConsolidatedBalanceRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
         }
     }
 }

@@ -39,7 +39,7 @@ public class DailyConsolidationServiceTests
 
         _mockBalanceRepo
             .Setup(repo => repo.GetBalanceByDateAsync(It.IsAny<DateTime>()))
-            .ReturnsAsync((ConsolidatedBalance?)null); // Simulando que ainda não existe um saldo consolidado para a data
+            .ReturnsAsync((ConsolidatedBalance?)null); 
 
         // Act
         await _service.ProcessTransactionAsync(transaction);

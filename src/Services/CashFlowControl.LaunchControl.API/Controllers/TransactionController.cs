@@ -1,6 +1,7 @@
 ﻿using CashFlowControl.Core.Application.DTOs;
 using CashFlowControl.Core.Application.Interfaces.Services;
 using CashFlowControl.Core.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CashFlowControl.LaunchControl.API.Controllers
@@ -16,6 +17,7 @@ namespace CashFlowControl.LaunchControl.API.Controllers
             _transactionService = transactionService;
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionDTO createTransaction)
         {
@@ -28,10 +30,7 @@ namespace CashFlowControl.LaunchControl.API.Controllers
                 if (transactionCreated == null)
                     return StatusCode(500, new { Message = "Error publishing transaction to message queue." });
 
-                // Retorna 202 Accepted para indicar que a transação está sendo processada.
                 return Accepted(new { Message = "Transaction is being processed", Amount = transactionCreated.Amount, Type = transactionCreated.Type, CreatedAt = transactionCreated.CreatedAt });
-
-                //return CreatedAtAction(nameof(GetTransactionById), new { id = transactionCreated.Id }, transactionCreated);
             }
             catch (Exception ex)
             {
@@ -43,7 +42,7 @@ namespace CashFlowControl.LaunchControl.API.Controllers
             }
         }
 
-
+        [AllowAnonymous]
         [HttpGet("id/{id}")]
         public async Task<IActionResult> GetTransactionById(Guid id)
         {
@@ -54,6 +53,7 @@ namespace CashFlowControl.LaunchControl.API.Controllers
             return Ok(transaction);
         }
 
+        [AllowAnonymous]
         [HttpGet("date/{date}")]
         public async Task<IActionResult> GetTransactionByDate(DateTime date)
         {
@@ -64,6 +64,7 @@ namespace CashFlowControl.LaunchControl.API.Controllers
             return Ok(transaction);
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllTransactions()
         {

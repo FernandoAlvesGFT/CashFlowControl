@@ -1,29 +1,36 @@
 services:
-  cashflowcontrol.dailyconsolidation.api:
-    image: fernandoribeiroalves/dailyconsolidation-api:develop-v1
+  cashflowcontrol.permissions.api:
+    image: fernandoribeiroalves/permissions-api:develop-v1
     build:
       context: .
-      dockerfile: src/Services/CashFlowControl.DailyConsolidation.API/Dockerfile
+      dockerfile: src/Services/CashFlowControl.Permissions.API/Dockerfile
     ports:
-      - "7047:443"
-      - "5043:80"
+      - "7043:7043"
+      - "5290:5290"
     depends_on:
-      - "sqlserver"
-      - "rabbitmq"
-      - "cashflowcontrol.launchcontrol.api"
+      - sqlserver
+      - rabbitmq
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CashFlowDb;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
-      - TransactionApiUrl=https://cashflowcontrol.launchcontrol.api:7253/api/Transaction
-      - RABBITMQ__HOST=rabbitmq
-      - RABBITMQ__USER=guest
-      - RABBITMQ__PASS=guest
+      - ConnectionStrings__MasterConnection=Server=sqlserver;Database=Master;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx
       - ASPNETCORE_Kestrel__Certificates__Default__Password=102030@Certs
+      - Jwt__SecretKey=b3Bt0k3n!$@reM@nd4t0ryF0rJWT_32C
+      - Jwt__Issuer=https://cashflowcontrol.permissions.api
+      - UserAdmin__Email=admin@cashflowcontrol.com
+      - UserAdmin__UserName=admin@cashflowcontrol.com
+      - UserAdmin__FullName=Admin
+      - UserAdmin__Password=Admin@123
     volumes:
       - ./certs:/https:ro
     networks:
       - backend
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "7043"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
 
   cashflowcontrol.launchcontrol.api:
     image: fernandoribeiroalves/launchcontrol-api:develop-v1
@@ -31,19 +38,88 @@ services:
       context: .
       dockerfile: src/Services/CashFlowControl.LaunchControl.API/Dockerfile
     ports:
-      - "7253:443"
-      - "5166:80"
+      - "7253:7253"
+      - "5166:5166"
     depends_on:
-      - "sqlserver"
-      - "rabbitmq"
+      - sqlserver
+      - rabbitmq
+      - cashflowcontrol.permissions.api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CashFlowDb;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
-      - RABBITMQ__HOST=rabbitmq
-      - RABBITMQ__USER=guest
-      - RABBITMQ__PASS=guest
+      - ConnectionStrings__MasterConnection=Server=sqlserver;Database=Master;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx
       - ASPNETCORE_Kestrel__Certificates__Default__Password=102030@Certs
+      - urlApiAuth=https://cashflowcontrol.permissions.api
+      - Jwt__SecretKey=b3Bt0k3n!$@reM@nd4t0ryF0rJWT_32C
+      - Jwt__Issuer=https://cashflowcontrol.permissions.api
+      - Jwt__Audience=https://cashflowcontrol.LaunchControl.api
+    volumes:
+      - ./certs:/https:ro
+    networks:
+      - backend
+
+  cashflowcontrol.dailyconsolidation.api:
+    image: fernandoribeiroalves/dailyconsolidation-api:develop-v1
+    build:
+      context: .
+      dockerfile: src/Services/CashFlowControl.DailyConsolidation.API/Dockerfile
+    ports:
+      - "7047:7047"
+      - "5043:5043"
+    depends_on:
+      - sqlserver
+      - rabbitmq
+      - cashflowcontrol.permissions.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CashFlowDb;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
+      - ConnectionStrings__MasterConnection=Server=sqlserver;Database=Master;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
+      - TransactionApiUrl=https://cashflowcontrol.launchcontrol.api:7253/api/Transaction
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=102030@Certs
+      - urlApiAuth=https://cashflowcontrol.permissions.api
+      - Jwt__SecretKey=b3Bt0k3n!$@reM@nd4t0ryF0rJWT_32C
+      - Jwt__Issuer=https://cashflowcontrol.permissions.api
+      - Jwt__Audience=https://cashflowcontrol.dailyConsolidation.api
+    volumes:
+      - ./certs:/https:ro
+    networks:
+      - backend
+
+  cashflowcontrol.apigateway.api:
+    image: fernandoribeiroalves/apigateway-api:develop-v1
+    build:
+      context: .
+      dockerfile: src/Services/CashFlowControl.ApiGateway.API/Dockerfile
+    ports:
+      - "7144:7144"
+      - "5230:5230"
+    depends_on:
+      - sqlserver
+      - rabbitmq
+      - cashflowcontrol.permissions.api
+      - cashflowcontrol.launchcontrol.api
+      - cashflowcontrol.dailyconsolidation.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=102030@Certs
+      - urlApiAuth=https://localhost:7043
+      - DocsSwagger__Launchcontrol=https://localhost:7253/swagger/v1/swagger.json
+      - DocsSwagger__Dailyconsolidation=https://localhost:7047/swagger/v1/swagger.json
+      - DocsSwagger__Permissions=https://localhost:7043/swagger/v1/swagger.json
+      - Jwt__SecretKey=b3Bt0k3n!$@reM@nd4t0ryF0rJWT_32C
+      - Jwt__Issuer=https://cashflowcontrol.permissions.api
+      - Jwt__Audience=https://cashflowcontrol.apiGateway.api
     volumes:
       - ./certs:/https:ro
     networks:
@@ -60,10 +136,11 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "1809@Mudar", "-Q", "SELECT 1"]
+      test: ["CMD-SHELL", "sqlcmd -S localhost -U sa -P '1809@Mudar' -Q 'SELECT 1' || exit 1"]
       interval: 10s
       retries: 5
-      start_period: 30s
+      start_period: 40s
+      timeout: 5s
 
   rabbitmq:
     image: "rabbitmq:management"
@@ -77,10 +154,11 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
+      test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]
       interval: 10s
       retries: 5
-      start_period: 30s
+      start_period: 40s
+      timeout: 5s
 
 networks:
   backend:

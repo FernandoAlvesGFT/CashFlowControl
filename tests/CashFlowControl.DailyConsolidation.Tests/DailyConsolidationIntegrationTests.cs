@@ -27,7 +27,7 @@ namespace CashFlowControl.DailyConsolidation.Tests
             _mockBalanceRepo = new Mock<IConsolidatedBalanceRepository>();
             _mockLogger = new Mock<ILogger<DailyConsolidationService>>();
 
-            var webAppFactory = new WebApplicationFactory<Program>(); // Inicia o servidor
+            var webAppFactory = new WebApplicationFactory<Program>(); 
             _client = webAppFactory.CreateClient();
 
             _dailyConsolidationService = new DailyConsolidationService(_mockTransactionHttpClientService.Object, _mockBalanceRepo.Object, _mockLogger.Object);
@@ -48,7 +48,7 @@ namespace CashFlowControl.DailyConsolidation.Tests
             response.EnsureSuccessStatusCode();
 
             var transactionUrl = response.Headers.Location?.ToString();
-            Assert.NotNull(transactionUrl); // Garante que a URL foi retornada
+            Assert.NotNull(transactionUrl); 
 
             // Act - Consultar a API com a URL retornada
             var transactionResponse = await _client.GetAsync(transactionUrl);
@@ -79,7 +79,6 @@ namespace CashFlowControl.DailyConsolidation.Tests
                 }
             };
 
-            // Configurar o mock para retornar as transações simuladas
             _mockTransactionHttpClientService
                 .Setup(service => service.GetTransactionsByDateAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync(expectedTransactions);

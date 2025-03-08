@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CashFlowControl.Core.Application.DTOs
 {
     public class CreateTransactionDTO
     {
+        [JsonIgnore]
         public Guid Id { get; set; }
         /// <summary>
         /// Valor Transação
@@ -20,6 +22,7 @@ namespace CashFlowControl.Core.Application.DTOs
         /// <summary>
         /// Data de Criação
         /// </summary>
+        [JsonIgnore]
         public DateTime CreatedAt { get; set; }
     }
 }

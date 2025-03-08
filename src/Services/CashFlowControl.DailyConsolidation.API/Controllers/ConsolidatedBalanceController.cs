@@ -1,4 +1,5 @@
 ﻿using CashFlowControl.Core.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CashFlowControl.DailyConsolidation.API.Controllers
@@ -14,7 +15,7 @@ namespace CashFlowControl.DailyConsolidation.API.Controllers
             _dailyConsolidationService = dailyConsolidationService;
         }
 
-        // GET api/ConsolidatedBalance/{date}
+        [Authorize]
         [HttpGet("{date}")]
         public async Task<ActionResult<decimal>> GetConsolidatedBalance(DateTime date)
         {

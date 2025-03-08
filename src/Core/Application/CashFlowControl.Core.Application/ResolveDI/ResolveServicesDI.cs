@@ -15,7 +15,7 @@ namespace CashFlowControl.Core.Application.ResolveDI
 
             builder.Services.AddScoped<IDailyConsolidationService, DailyConsolidationService>();
             builder.Services.AddScoped<ITransactionHttpClientService, TransactionHttpClientService>();
-            builder.Services.AddScoped<ITransactionService, TransactionService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
         }
     }
 }

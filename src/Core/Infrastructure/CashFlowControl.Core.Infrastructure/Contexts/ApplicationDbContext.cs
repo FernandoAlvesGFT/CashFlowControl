@@ -1,9 +1,11 @@
 ﻿using CashFlowControl.Core.Domain.Entities;
+using CashFlowControl.Core.Infrastructure.Configurations;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CashFlowControl.Core.Infrastructure.Contexts
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -12,6 +14,7 @@ namespace CashFlowControl.Core.Infrastructure.Contexts
 
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<ConsolidatedBalance> ConsolidatedBalances { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

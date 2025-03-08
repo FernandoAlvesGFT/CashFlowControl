@@ -34,7 +34,6 @@ namespace CashFlowControl.Core.Application.Services
             }
             catch (Exception ex)
             {
-                // Log de erro, caso o envio para a fila falhe
                 throw new InvalidOperationException("An error occurred while sending the transaction to the message queue.", ex);
             }
         }

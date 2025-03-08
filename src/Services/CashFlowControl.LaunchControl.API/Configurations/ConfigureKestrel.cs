@@ -11,7 +11,7 @@ namespace CashFlowControl.LaunchControl.API.Configurations
 
             if (string.IsNullOrEmpty(certPath) || string.IsNullOrEmpty(certPassword))
             {
-                throw new InvalidOperationException("Certificado ou senha não configurados.");
+                throw new InvalidOperationException("Certificate or password not configured.");
             }
 
             builder.WebHost.ConfigureKestrel(options =>
