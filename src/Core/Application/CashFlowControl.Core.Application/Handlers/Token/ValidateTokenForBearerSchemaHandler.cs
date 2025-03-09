@@ -1,14 +1,14 @@
+using CashFlowControl.Core.Application.Commands;
 using CashFlowControl.Core.Application.DTOs;
 using CashFlowControl.Core.Application.Security.Helpers;
 using MediatR;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace CashFlowControl.Core.Application.Commands
+namespace CashFlowControl.Core.Application.Handlers
 {
     public class ValidateTokenHandler : IRequestHandler<ValidateTokenCommand, Result<UserTokenValidationDto>>
     {

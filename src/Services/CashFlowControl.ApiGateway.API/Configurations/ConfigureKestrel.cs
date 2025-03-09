@@ -1,4 +1,6 @@
-﻿namespace CashFlowControl.ApiGateway.API.Configurations
+﻿using System.Security.Authentication;
+
+namespace CashFlowControl.ApiGateway.API.Configurations
 {
     public static class ConfigureKestrel
     {
@@ -14,6 +16,11 @@
 
             builder.WebHost.ConfigureKestrel(options =>
             {
+                options.ConfigureHttpsDefaults(httpsOptions =>
+                {
+                    httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+                });
+
                 options.ListenAnyIP(7144, listenOptions =>
                 {
                     listenOptions.UseHttps(certPath, certPassword);

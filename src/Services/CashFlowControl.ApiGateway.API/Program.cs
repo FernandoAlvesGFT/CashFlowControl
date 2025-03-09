@@ -1,11 +1,13 @@
 using CashFlowControl.ApiGateway.API.Configurations;
 using CashFlowControl.ApiGateway.API.Configurations.ResolveDI;
+using CashFlowControl.ApiGateway.API.Extensions;
 using CashFlowControl.Core.Application.ResolveDI;
 using CashFlowControl.Core.Infrastructure.Configurations.ResolveDI;
 using CashFlowControl.Core.Infrastructure.Logging;
 using Microsoft.Extensions.Configuration;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Ocelot.Values;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +18,8 @@ SerilogConfig.Configuration();
 
 builder.Host.UseSerilog();
 
+DatabaseDI.Registry(builder);
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
@@ -24,35 +28,42 @@ builder.Services.AddCors(options =>
                           .AllowAnyHeader());
 });
 
-builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true).Build();
+builder.Configuration.SetBasePath("/app").AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
 TokenJwtDI.RegistryConsumer(builder);
-builder.Services.AddOcelot();
 builder.Services.ConfigureSecurityModule(builder.Configuration);
 
 SwaggerDI.Registry(builder);
 
+builder.Services.AddEndpointsApiExplorer();
+
+ResolveServicesDI.RegistryServices(builder);
+
 builder.Services.AddControllers();
 
+builder.Services.ConfigureAuthCQRS(builder.Configuration);
+
+ResolveRepositoriesDI.RegistryRepositories(builder);
+
+builder.Services.AddSingleton<CustomDelegatingHandler>();
+builder.Services.AddOcelot()
+        .AddDelegatingHandler<CustomDelegatingHandler>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 app.UseCors("AllowAllOrigins");
 
 SwaggerConfig.Configure(app);
 
 app.UseSerilogRequestLogging();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseOcelot().Wait();
 
 app.MapControllers();
+
+app.UseOcelot().Wait();
 
 app.Run();

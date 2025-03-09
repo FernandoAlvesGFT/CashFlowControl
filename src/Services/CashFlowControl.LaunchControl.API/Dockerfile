@@ -56,10 +56,9 @@ RUN ls /usr/local/share/ca-certificates/cert.crt
 # Define variáveis de ambiente
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS="http://+:5166;https://+:7253"
-ENV TransactionApiUrl="https://localhost:7253/api/Transaction"
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=102030@Certs
-ENV urlApiAuth="https://cashflowcontrol.permissions.api"
+ENV urlApiAuth="https://cashflowcontrol.permissions.api:7043"
 ENV Jwt__SecretKey="b3Bt0k3n!$@reM@nd4t0ryF0rJWT_32C"
 ENV Jwt__Issuer="https://cashflowcontrol.permissions.api"
 ENV Jwt__Audience="https://cashflowcontrol.LaunchControl.api"

@@ -1,6 +1,7 @@
+using CashFlowControl.Core.Application.Commands;
 using FluentValidation;
 
-namespace CashFlowControl.Core.Application.Commands
+namespace CashFlowControl.Core.Application.Validators
 {
     public class ValidateTokenForBearerSchemaCommandValidator : AbstractValidator<ValidateTokenCommand>
     {

@@ -7,8 +7,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using CashFlowControl.Core.Application.Interfaces.Services;
-using CashFlowControl.Core.Application.DTOs;
-using Microsoft.AspNetCore.Identity;
+using MediatR;
+using CashFlowControl.Core.Application.Commands.Auth;
+using CashFlowControl.Core.Application.Queries.Auth;
 
 
 namespace CashFlowControl.Core.Application.Services
@@ -17,21 +18,13 @@ namespace CashFlowControl.Core.Application.Services
     {
         private readonly IConfiguration _config;
         private readonly IUserRepository _userRepository;
+        private IMediator _mediator;
 
-        public AuthService(IConfiguration config, IUserRepository userRepository)
+        public AuthService(IConfiguration config, IUserRepository userRepository, IMediator mediator)
         {
             _config = config;
             _userRepository = userRepository;
-        }
-
-        public async Task<(IdentityResult? identityResult, ApplicationUser applicationUser)> RegisterUser(RegisterModelDTO model)
-        {           
-            return await _userRepository.RegisterUser(model);
-        }
-
-        public async Task<(SignInResult? result, ApplicationUser? user)> Authenticate(LoginModelDTO model)
-        {
-            return await _userRepository.Authenticate(model);
+            _mediator = mediator;
         }
 
         public string GenerateAccessToken(string userId)
@@ -62,7 +55,7 @@ namespace CashFlowControl.Core.Application.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public RefreshToken GenerateRefreshToken(string userId)
+        public async Task<RefreshToken> GenerateRefreshTokenAsync(string userId)
         {
             var refreshToken = new RefreshToken
             {
@@ -71,14 +64,15 @@ namespace CashFlowControl.Core.Application.Services
                 UserId = userId,
                 IsRevoked = false
             };
-
-            _userRepository.SaveRefreshToken(refreshToken); 
+            await _mediator.Send(new AuthSaveRefreshTokenCommand(refreshToken), CancellationToken.None);
             return refreshToken;
         }
 
-        public string RefreshAccessToken(string refreshToken)
+        public async Task<string> RefreshAccessTokenAsync(string refreshToken)
         {
-            var storedToken = _userRepository.GetRefreshToken(refreshToken);
+            var returnStoredToken = await _mediator.Send(new AuthGetRefreshTokenQuery(refreshToken), CancellationToken.None);
+
+            var storedToken = returnStoredToken.Value;
             if (storedToken == null || storedToken.IsRevoked || storedToken.Expiration < DateTime.UtcNow)
                 throw new Exception("Invalid refresh token.");
 

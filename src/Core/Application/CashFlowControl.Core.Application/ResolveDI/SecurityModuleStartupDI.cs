@@ -1,4 +1,5 @@
 ﻿using CashFlowControl.Core.Application.Commands;
+using CashFlowControl.Core.Application.Validators;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

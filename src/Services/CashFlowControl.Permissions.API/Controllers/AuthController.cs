@@ -1,5 +1,7 @@
-﻿using CashFlowControl.Core.Application.DTOs;
+﻿using CashFlowControl.Core.Application.Commands;
+using CashFlowControl.Core.Application.DTOs;
 using CashFlowControl.Core.Application.Interfaces.Services;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CashFlowControl.Permissions.API.Controllers
@@ -9,23 +11,37 @@ namespace CashFlowControl.Permissions.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private IMediator _mediator;
 
 
-        public AuthController(IAuthService authService)
+
+        public AuthController(IAuthService authService, IMediator mediator)
         {
             _authService = authService;
+            _mediator = mediator;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModelDTO model)
         {
-            var (result, user) = await _authService.RegisterUser(model);
+            var ResultRegisterUser = await _mediator.Send(new AuthRegisterUserCommand(model), CancellationToken.None);
+            if (!ResultRegisterUser.IsSuccess)
+            {
+                if (ResultRegisterUser.HasValidationErrors)
+                {
+                    return BadRequest(new { Errors = ResultRegisterUser.ValidationErrors });
+                }
+
+                return StatusCode(500, ResultRegisterUser.SystemError);
+            }
+
+            var (result, user) = ResultRegisterUser.Value;
 
             if (result == null || !result.Succeeded)
                 return BadRequest(result?.Errors);
 
             var accessToken = _authService.GenerateAccessToken(user.Id);
-            var refreshToken = _authService.GenerateRefreshToken(user.Id);
+            var refreshToken = await _authService.GenerateRefreshTokenAsync(user.Id);
 
             return Ok(new
             {
@@ -37,13 +53,24 @@ namespace CashFlowControl.Permissions.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModelDTO model)
         {
-            var (result, user) = await _authService.Authenticate(model);
+            var ResultAuthenticate = await _mediator.Send(new AuthAuthenticateCommand(model), CancellationToken.None);
+            if (!ResultAuthenticate.IsSuccess)
+            {
+                if (ResultAuthenticate.HasValidationErrors)
+                {
+                    return BadRequest(new { Errors = ResultAuthenticate.ValidationErrors });
+                }
+
+                return StatusCode(500, ResultAuthenticate.SystemError);
+            }
+
+            var (result, user) = ResultAuthenticate.Value;
 
             if (result == null || !result.Succeeded || user == null)
                 return Unauthorized();
 
             var accessToken = _authService.GenerateAccessToken(user.Id);
-            var refreshToken = _authService.GenerateRefreshToken(user.Id);
+            var refreshToken = await _authService.GenerateRefreshTokenAsync(user.Id);
 
             return Ok(new
             {
@@ -57,7 +84,7 @@ namespace CashFlowControl.Permissions.API.Controllers
         {
             try
             {
-                var newAccessToken = _authService.RefreshAccessToken(request.RefreshToken);
+                var newAccessToken = _authService.RefreshAccessTokenAsync(request.RefreshToken);
                 return Ok(new { AccessToken = newAccessToken });
             }
             catch (Exception ex)

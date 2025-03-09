@@ -1,4 +1,8 @@
 {
+  "HttpHandlerOptions": {
+    "AllowAutoRedirect": true,
+    "UseCookieContainer": true
+  },
   "Routes": [
     {
       "DownstreamPathTemplate": "/api/consolidated-balance/{date}",
@@ -25,7 +29,7 @@
           "Port": 7253
         }
       ],
-      "UpstreamPathTemplate": "/transactions",
+      "UpstreamPathTemplate": "/api/transactions",
       "UpstreamHttpMethod": [ "POST", "GET" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
@@ -41,7 +45,7 @@
           "Port": 7253
         }
       ],
-      "UpstreamPathTemplate": "/transactions/id/{id}",
+      "UpstreamPathTemplate": "/api/transactions/id/{id}",
       "UpstreamHttpMethod": [ "GET" ]
     },
     {
@@ -53,7 +57,7 @@
           "Port": 7253
         }
       ],
-      "UpstreamPathTemplate": "/transactions/date/{date}",
+      "UpstreamPathTemplate": "/api/transactions/date/{date}",
       "UpstreamHttpMethod": [ "GET" ]
     },
     {
@@ -94,6 +98,6 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://CashFlowControl.ApiGateway.API:7144"
+    "BaseUrl": "https://cashflowcontrol.apigateway.api:7144"
   }
 }

@@ -27,6 +27,8 @@ builder.Services.AddControllers();
 
 ResolveServicesDI.RegistryServices(builder);
 
+builder.Services.ConfigureAuthCQRS(builder.Configuration);
+
 ResolveRepositoriesDI.RegistryRepositories(builder);
 
 var app = builder.Build();
