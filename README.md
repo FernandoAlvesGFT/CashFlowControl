@@ -63,3 +63,9 @@ Durante o desenvolvimento, algumas decisões foram tomadas para garantir a escal
 **dotnet test**
 
   Isso executará todos os testes definidos no projeto, verificando a integridade da lógica da aplicação.
+
+
+**Diagrama da Aplicação**
+
+![Cash Flow Contro](https://github.com/user-attachments/assets/97e87270-a5a8-4c82-8216-e9f6381564b0)
+
