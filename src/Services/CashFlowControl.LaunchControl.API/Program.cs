@@ -20,6 +20,7 @@ builder.Host.UseSerilog();
 DatabaseDI.Registry(builder);
 
 TokenJwtDI.RegistryConsumer(builder);
+builder.Services.ConfigureSecurityModule(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -37,6 +38,8 @@ ResolveRepositoriesDI.RegistryRepositories(builder);
 var app = builder.Build();
 
 SwaggerConfig.Configure(app);
+
+app.UseCors("AllowAllOrigins");
 
 app.UseSerilogRequestLogging();
 

@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace CashFlowControl.DailyConsolidation.API.Configurations
+﻿namespace CashFlowControl.DailyConsolidation.API.Configurations
 {
     public static class ConfigureKestrel
     {

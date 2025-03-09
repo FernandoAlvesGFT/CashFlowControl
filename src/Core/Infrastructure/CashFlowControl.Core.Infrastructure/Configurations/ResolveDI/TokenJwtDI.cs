@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using CashFlowControl.Core.Application.Security;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -46,25 +49,17 @@ namespace CashFlowControl.Core.Infrastructure.Configurations.ResolveDI
                 throw new InvalidOperationException("JWT settings not defined.");
             }
 
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                 .AddJwtBearer("Bearer", options =>
-                 {
-                     options.SaveToken = true;
-                     options.Authority = urlApiAuth; 
-                     options.RequireHttpsMetadata = true;
-                     options.TokenValidationParameters = new TokenValidationParameters
-                     {
-                         ValidateIssuer = true,
-                         ValidateAudience = true,
-                         ValidateLifetime = true,
-                         ValidateIssuerSigningKey = true,
-                         ValidIssuer = validIssuer,
-                         ValidAudience = validAudience,
-                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(IssuerSigningKey))
-                     };
-                 });
-
-            builder.Services.AddAuthorization();
+            builder.Services
+                .AddAuthentication("Bearer")
+                .AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>("Bearer", null);
+            builder.Services.AddAuthorization(opt =>
+            {
+                var defaultPolicy = new AuthorizationPolicyBuilder()
+                    .AddAuthenticationSchemes("Bearer")
+                    .RequireAuthenticatedUser()
+                    .Build();
+                opt.DefaultPolicy = defaultPolicy;
+            });
         }
     }
 }

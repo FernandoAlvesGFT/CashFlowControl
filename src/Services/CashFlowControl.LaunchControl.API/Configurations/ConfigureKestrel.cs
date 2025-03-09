@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace CashFlowControl.LaunchControl.API.Configurations
+﻿namespace CashFlowControl.LaunchControl.API.Configurations
 {
     public static class ConfigureKestrel
     {

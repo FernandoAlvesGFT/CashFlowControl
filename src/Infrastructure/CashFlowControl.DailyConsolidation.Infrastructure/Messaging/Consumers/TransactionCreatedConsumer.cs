@@ -14,13 +14,15 @@ namespace CashFlowControl.DailyConsolidation.Infrastructure.Messaging.Consumers
         private readonly ITransactionRepository _transactionRepository;
         private readonly IDailyConsolidationService _dailyConsolidationService;
         private readonly IMapper _mapper;
+        private readonly IBus _messageBus;
 
-        public TransactionCreatedConsumer(ILogger<TransactionCreatedConsumer> logger, ITransactionRepository transactionRepository, IDailyConsolidationService dailyConsolidationService, IMapper mapper)
+        public TransactionCreatedConsumer(ILogger<TransactionCreatedConsumer> logger, ITransactionRepository transactionRepository, IDailyConsolidationService dailyConsolidationService, IMapper mapper, IBus messageBus)
         {
             _logger = logger;
             _transactionRepository = transactionRepository;
             _dailyConsolidationService = dailyConsolidationService;
             _mapper = mapper;
+            _messageBus = messageBus;
         }
 
         public async Task Consume(ConsumeContext<TransactionCreatedDTO> context)
@@ -37,11 +39,23 @@ namespace CashFlowControl.DailyConsolidation.Infrastructure.Messaging.Consumers
                 CreatedAt = message.CreatedAt
             };
 
-            await _transactionRepository.CreateTransactionAsync(transaction);
+            try
+            {
+                await _transactionRepository.CreateTransactionAsync(transaction);
 
-            var createTransactionDTO = _mapper.Map<CreateTransactionDTO>(transaction);
+                var createTransactionDTO = _mapper.Map<CreateTransactionDTO>(transaction);
 
-            await _dailyConsolidationService.ProcessTransactionAsync(createTransactionDTO);
+                await _dailyConsolidationService.ProcessTransactionAsync(createTransactionDTO);
+
+            }
+            catch (Exception ex)
+            {
+                var transactionCreatedFailed = _mapper.Map<TransactionCreatedFailedDTO>(transaction);
+
+                await _messageBus.Publish(transactionCreatedFailed);
+
+                throw;
+            }
 
             await Task.CompletedTask;
         }

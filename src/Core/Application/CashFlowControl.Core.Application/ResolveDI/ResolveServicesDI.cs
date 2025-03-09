@@ -9,6 +9,14 @@ namespace CashFlowControl.Core.Application.ResolveDI
     {
         public static void RegistryServices(WebApplicationBuilder builder)
         {
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAllOrigins",
+                    builder => builder.AllowAnyOrigin()
+                                      .AllowAnyMethod()
+                                      .AllowAnyHeader());
+            });
+
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             builder.Services.AddHttpClient<TransactionHttpClientService>();

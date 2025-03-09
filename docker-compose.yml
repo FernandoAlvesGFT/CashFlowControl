@@ -1,9 +1,11 @@
 services:
   cashflowcontrol.permissions.api:
     image: fernandoribeiroalves/permissions-api:develop-v1
+    container_name: cashflowcontrol.permissions.api
     build:
       context: .
       dockerfile: src/Services/CashFlowControl.Permissions.API/Dockerfile
+    restart: always 
     ports:
       - "7043:7043"
       - "5290:5290"
@@ -12,6 +14,7 @@ services:
       - rabbitmq
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS="http://+:5290;https://+:7043"
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CashFlowDb;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
       - ConnectionStrings__MasterConnection=Server=sqlserver;Database=Master;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx
@@ -26,17 +29,14 @@ services:
       - ./certs:/https:ro
     networks:
       - backend
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "7043"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
 
   cashflowcontrol.launchcontrol.api:
     image: fernandoribeiroalves/launchcontrol-api:develop-v1
+    container_name: cashflowcontrol.launchcontrol.api
     build:
       context: .
       dockerfile: src/Services/CashFlowControl.LaunchControl.API/Dockerfile
+    restart: always 
     ports:
       - "7253:7253"
       - "5166:5166"
@@ -46,6 +46,7 @@ services:
       - cashflowcontrol.permissions.api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS="http://+:5166;https://+:7253"
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CashFlowDb;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
       - ConnectionStrings__MasterConnection=Server=sqlserver;Database=Master;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
       - RabbitMQ__Host=rabbitmq
@@ -65,9 +66,11 @@ services:
 
   cashflowcontrol.dailyconsolidation.api:
     image: fernandoribeiroalves/dailyconsolidation-api:develop-v1
+    container_name: cashflowcontrol.dailyconsolidation.api
     build:
       context: .
       dockerfile: src/Services/CashFlowControl.DailyConsolidation.API/Dockerfile
+    restart: always 
     ports:
       - "7047:7047"
       - "5043:5043"
@@ -77,6 +80,7 @@ services:
       - cashflowcontrol.permissions.api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS="http://+:5043;https://+:7047"
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CashFlowDb;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
       - ConnectionStrings__MasterConnection=Server=sqlserver;Database=Master;User Id=sa;Password=1809@Mudar;TrustServerCertificate=True;
       - TransactionApiUrl=https://cashflowcontrol.launchcontrol.api:7253/api/Transaction
@@ -97,9 +101,11 @@ services:
 
   cashflowcontrol.apigateway.api:
     image: fernandoribeiroalves/apigateway-api:develop-v1
+    container_name: cashflowcontrol.apigateway.api
     build:
       context: .
       dockerfile: src/Services/CashFlowControl.ApiGateway.API/Dockerfile
+    restart: always 
     ports:
       - "7144:7144"
       - "5230:5230"
@@ -111,6 +117,7 @@ services:
       - cashflowcontrol.dailyconsolidation.api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS="http://+:5230;https://+:7144"
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx
       - ASPNETCORE_Kestrel__Certificates__Default__Password=102030@Certs
       - urlApiAuth=https://localhost:7043
@@ -128,6 +135,7 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver
+    restart: always 
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=1809@Mudar
@@ -135,16 +143,11 @@ services:
       - "1433:1433"
     networks:
       - backend
-    healthcheck:
-      test: ["CMD-SHELL", "sqlcmd -S localhost -U sa -P '1809@Mudar' -Q 'SELECT 1' || exit 1"]
-      interval: 10s
-      retries: 5
-      start_period: 40s
-      timeout: 5s
 
   rabbitmq:
     image: "rabbitmq:management"
     container_name: rabbitmq
+    restart: always 
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -153,13 +156,22 @@ services:
       - "5672:5672"
     networks:
       - backend
-    healthcheck:
-      test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]
-      interval: 10s
-      retries: 5
-      start_period: 40s
-      timeout: 5s
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - backend
 
 networks:
   backend:
     driver: bridge
+
+volumes:
+  portainer_data:
