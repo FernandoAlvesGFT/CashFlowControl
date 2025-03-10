@@ -3,6 +3,7 @@ using CashFlowControl.Core.Application.Interfaces.Services;
 using CashFlowControl.Core.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace CashFlowControl.LaunchControl.API.Controllers
 {
@@ -19,10 +20,15 @@ namespace CashFlowControl.LaunchControl.API.Controllers
 
         [Authorize]
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerResponse(200, "Busca realizada com sucesso.", typeof(TransactionCreatedDTO))]
+
         public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionDTO createTransaction)
         {
             if (createTransaction.Amount <= 0 || (!createTransaction.Type.Equals(TransactionType.Credit.ToString()) && !createTransaction.Type.Equals(TransactionType.Debit.ToString())))
-                return BadRequest("Invalid transaction type or amount.");
+                return BadRequest("Invalid transaction type or amount. Type must be either 'Credit' or 'Debit'. Amount must be greater than 0.00");
 
             try
             {
@@ -44,6 +50,11 @@ namespace CashFlowControl.LaunchControl.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("id/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerResponse(200, "Busca realizada com sucesso.", typeof(CreateTransactionDTO))]
+
         public async Task<IActionResult> GetTransactionById(Guid id)
         {
             var transaction = await _transactionService.GetTransactionByIdAsync(id);
@@ -55,6 +66,11 @@ namespace CashFlowControl.LaunchControl.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("date/{date}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerResponse(200, "Busca realizada com sucesso.", typeof(List<CreateTransactionDTO>))]
+
         public async Task<IActionResult> GetTransactionByDate(DateTime date)
         {
             var transaction = await _transactionService.GetTransactionByDateAsync(date);
@@ -66,6 +82,11 @@ namespace CashFlowControl.LaunchControl.API.Controllers
 
         [Authorize]
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [SwaggerResponse(200, "Busca realizada com sucesso.", typeof(List<CreateTransactionDTO>))]
+
         public async Task<IActionResult> GetAllTransactions()
         {
             var transactions = await _transactionService.GetAllTransactionsAsync();
