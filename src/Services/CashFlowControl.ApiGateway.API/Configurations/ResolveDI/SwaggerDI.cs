@@ -20,15 +20,15 @@ namespace CashFlowControl.ApiGateway.API.Configurations.ResolveDI
                     Description = "Este é o gateway de API do CashFlowControl. Ele atua como um ponto único de entrada para todas as APIs internas do sistema. O gateway gerencia as requisições, realiza roteamento, e garante a autenticação e autorização dos usuários por meio de tokens JWT."
                 });
 
-                options.DocInclusionPredicate((docName, apiDesc) =>
-                {
-                    var relativePath = apiDesc.RelativePath ?? "";
-                    return !relativePath.StartsWith("ocelot");
-                });
+                //options.DocInclusionPredicate((docName, apiDesc) =>
+                //{
+                //    var relativePath = apiDesc.RelativePath ?? "";
+                //    return !relativePath.StartsWith("ocelot");
+                //});
 
-                options.AddServer(new OpenApiServer { Url = docLaunchcontrol });
-                options.AddServer(new OpenApiServer { Url = docDailyconsolidation });
-                options.AddServer(new OpenApiServer { Url = docPermissions });
+                //options.AddServer(new OpenApiServer { Url = docLaunchcontrol });
+                //options.AddServer(new OpenApiServer { Url = docDailyconsolidation });
+                //options.AddServer(new OpenApiServer { Url = docPermissions });
 
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {

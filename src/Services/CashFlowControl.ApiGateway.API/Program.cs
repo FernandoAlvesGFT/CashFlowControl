@@ -45,15 +45,23 @@ builder.Services.ConfigureAuthCQRS(builder.Configuration);
 
 ResolveRepositoriesDI.RegistryRepositories(builder);
 
+builder.Services.AddSwaggerForOcelot(builder.Configuration);
+
 builder.Services.AddSingleton<CustomDelegatingHandler>();
 builder.Services.AddOcelot()
         .AddDelegatingHandler<CustomDelegatingHandler>();
+
 
 var app = builder.Build();
 
 app.UseCors("AllowAllOrigins");
 
 SwaggerConfig.Configure(app);
+
+app.UseSwaggerForOcelotUI(options =>
+{
+    options.PathToSwaggerGenerator = "/swagger/docs"; 
+});
 
 app.UseSerilogRequestLogging();
 
@@ -63,6 +71,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseForwardedHeaders();
+
 
 app.UseOcelot().Wait();
 

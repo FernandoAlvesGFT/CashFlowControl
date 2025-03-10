@@ -47,6 +47,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseForwardedHeaders();
 
 app.Run();
 

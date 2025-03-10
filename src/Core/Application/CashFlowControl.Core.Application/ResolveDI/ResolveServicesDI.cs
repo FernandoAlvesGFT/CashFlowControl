@@ -38,6 +38,10 @@ namespace CashFlowControl.Core.Application.ResolveDI
                 };
             });
 
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All;
+            });
 
             builder.Services.AddHttpClient<TransactionHttpClientService>();
 

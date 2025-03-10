@@ -1,8 +1,11 @@
 ﻿using CashFlowControl.Core.Application.DTOs;
 using CashFlowControl.Core.Application.Interfaces.Repositories;
 using CashFlowControl.Core.Application.Interfaces.Services;
+using CashFlowControl.Core.Application.Queries;
+using CashFlowControl.Core.Application.Security.Helpers;
 using CashFlowControl.Core.Domain.Entities;
 using CashFlowControl.Core.Domain.Enums;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace CashFlowControl.Core.Application.Services
@@ -12,12 +15,14 @@ namespace CashFlowControl.Core.Application.Services
         private readonly ITransactionHttpClientService _transactionHttpClient;
         private readonly IConsolidatedBalanceRepository _balanceRepository;
         private readonly ILogger<DailyConsolidationService> _logger;
+        private IMediator _mediator;
 
-        public DailyConsolidationService(ITransactionHttpClientService transactionHttpClient, IConsolidatedBalanceRepository balanceRepository, ILogger<DailyConsolidationService> logger)
+        public DailyConsolidationService(ITransactionHttpClientService transactionHttpClient, IConsolidatedBalanceRepository balanceRepository, ILogger<DailyConsolidationService> logger, IMediator mediator)
         {
             _transactionHttpClient = transactionHttpClient;
             _balanceRepository = balanceRepository;
             _logger = logger;
+            _mediator = mediator;
         }
 
         public async Task ProcessTransactionAsync(CreateTransactionDTO transaction)
@@ -26,7 +31,8 @@ namespace CashFlowControl.Core.Application.Services
             {
                 _logger.LogInformation("Processing transaction {TransactionId}", transaction.Id);
 
-                var balance = await _balanceRepository.GetBalanceByDateAsync(transaction.CreatedAt.Date);
+                var resultBalance = await _mediator.Send(new ConsolidatedBalanceByDateQuery(transaction.CreatedAt.Date), CancellationToken.None);
+                var balance = resultBalance.Value;
 
                 if (balance == null)
                 {
@@ -99,17 +105,33 @@ namespace CashFlowControl.Core.Application.Services
         }
 
 
-        public async Task<decimal?> GetConsolidatedBalanceByDateAsync(DateTime date)
+        public async Task<Result<ConsolidatedBalanceDayDTO?>> GetConsolidatedBalanceByDateAsync(DateTime date)
         {
-            var transactions = await _transactionHttpClient.GetTransactionsByDateAsync(date.Date);
+            try
+            {
+                var transactions = await _transactionHttpClient.GetTransactionsByDateAsync(date.Date);
 
-            if (transactions == null || !transactions.Any())
-                return null;
+                if (transactions == null || !transactions.Any())
+                    return await Task.FromResult(Result<ConsolidatedBalanceDayDTO?>.Success(null));
 
-            decimal balance = transactions
-                .Sum(t => t.Type.Equals(TransactionType.Credit.ToString()) ? t.Amount : -t.Amount);
+                var resultBalance = await _mediator.Send(new ConsolidatedBalanceByDateQuery(date), CancellationToken.None);
+                var balance = resultBalance.Value;
 
-            return balance;
+                if (balance == null)
+                    return await Task.FromResult(Result<ConsolidatedBalanceDayDTO?>.Success(null));
+
+                var consolidatedBalanceDay = new ConsolidatedBalanceDayDTO()
+                {
+                    ConsolidatedBalance = balance,
+                    Transactions = transactions
+                };
+
+                return Result<ConsolidatedBalanceDayDTO?>.Success(consolidatedBalanceDay);
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult(Result<ConsolidatedBalanceDayDTO?>.Failure(ex.Message));
+            }
         }
     }
 }

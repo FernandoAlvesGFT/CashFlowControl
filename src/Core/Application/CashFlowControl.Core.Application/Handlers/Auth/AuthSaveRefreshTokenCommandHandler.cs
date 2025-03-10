@@ -21,19 +21,16 @@ namespace CashFlowControl.Core.Application.Handlers
             {
                 throw new CommandValidationException(request.Notifications);
             }
-            var success = false;
 
             try
             {
                 _userRepository.SaveRefreshToken(request.RefreshToken);
-                success = true;
+                return await Task.FromResult(Result<bool>.Success(true));
             }
             catch (Exception ex)
             {
                 return await Task.FromResult(Result<bool>.ValidationFailure(ex.Message));
-            }
-            return await Task.FromResult(Result<bool>.Success(success));
+            }            
         }
-
     }
 }

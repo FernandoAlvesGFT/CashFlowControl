@@ -80,11 +80,22 @@ namespace CashFlowControl.Permissions.API.Controllers
         }
 
         [HttpPost("refresh-token")]
-        public IActionResult RefreshToken([FromBody] RefreshTokenRequestDTO request)
+        public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenRequestDTO request)
         {
             try
             {
-                var newAccessToken = _authService.RefreshAccessTokenAsync(request.RefreshToken);
+                var returnRefreshToken = await _authService.RefreshAccessTokenAsync(request.RefreshToken);
+                if (!returnRefreshToken.IsSuccess)
+                {
+                    if (returnRefreshToken.HasValidationErrors)
+                    {
+                        return BadRequest(new { Errors = returnRefreshToken.ValidationErrors });
+                    }
+
+                    return StatusCode(500, returnRefreshToken.SystemError);
+                }
+                var newAccessToken = returnRefreshToken.Value;
+
                 return Ok(new { AccessToken = newAccessToken });
             }
             catch (Exception ex)

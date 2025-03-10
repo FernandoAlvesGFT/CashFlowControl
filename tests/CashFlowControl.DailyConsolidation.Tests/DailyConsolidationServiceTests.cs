@@ -4,6 +4,7 @@ using CashFlowControl.Core.Application.Interfaces.Services;
 using CashFlowControl.Core.Application.Services;
 using CashFlowControl.Core.Domain.Entities;
 using CashFlowControl.Core.Domain.Enums;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -15,14 +16,16 @@ public class DailyConsolidationServiceTests
     private readonly Mock<IConsolidatedBalanceRepository> _mockBalanceRepo;
     private readonly Mock<ILogger<DailyConsolidationService>> _mockLogger;
     private readonly IDailyConsolidationService _service;
+    private Mock<IMediator> _mediator;
 
     public DailyConsolidationServiceTests()
     {
         _mockTransactionHttpClientService = new Mock<ITransactionHttpClientService>();
         _mockBalanceRepo = new Mock<IConsolidatedBalanceRepository>();
         _mockLogger = new Mock<ILogger<DailyConsolidationService>>();
+        _mediator = new Mock<IMediator>();
 
-        _service = new DailyConsolidationService(_mockTransactionHttpClientService.Object, _mockBalanceRepo.Object, _mockLogger.Object);
+        _service = new DailyConsolidationService(_mockTransactionHttpClientService.Object, _mockBalanceRepo.Object, _mockLogger.Object, _mediator.Object);
     }
 
     [Fact]

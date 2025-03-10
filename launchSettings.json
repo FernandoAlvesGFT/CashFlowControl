@@ -7,7 +7,8 @@
         "cashflowcontrol.dailyconsolidation.api": "StartDebugging",
         "cashflowcontrol.launchcontrol.api": "StartDebugging",
         "cashflowcontrol.permissions.api": "StartDebugging",
-        "cashflowcontrol.apigateway.api": "StartDebugging"
+        "cashflowcontrol.apigateway.api": "StartDebugging",
+        "cashflowcontrol.dailyconsolidation.tests": "StartDebugging"
       }
     }
   }

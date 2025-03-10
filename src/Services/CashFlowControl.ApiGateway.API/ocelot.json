@@ -3,6 +3,9 @@
     "AllowAutoRedirect": true,
     "UseCookieContainer": true
   },
+  "GlobalConfiguration": {
+    "BaseUrl": "https://cashflowcontrol.apigateway.api:7144"
+  },
   "Routes": [
     {
       "DownstreamPathTemplate": "/api/consolidated-balance/{date}",
@@ -97,7 +100,27 @@
       "UpstreamHttpMethod": [ "Post" ]
     }
   ],
-  "GlobalConfiguration": {
-    "BaseUrl": "https://cashflowcontrol.apigateway.api:7144"
-  }
+  "SwaggerEndPoints": [
+    {
+      "Key": "Authenticate",
+      "Config": {
+        "Name": "API Authenticate",
+        "Url": "https://cashflowcontrol.permissions.api:7043/swagger/v1/swagger.json"
+      }
+    },
+    {
+      "Key": "dailyconsolidation",
+      "Config": {
+        "Name": "API Daily Consolidation",
+        "Url": "https://cashflowcontrol.dailyconsolidation.api:7047/swagger/v1/swagger.json"
+      }
+    },
+    {
+      "Key": "launchcontrol",
+      "Config": {
+        "Name": "API Launch Control",
+        "Url": "https://cashflowcontrol.launchcontrol.api:7253/swagger/v1/swagger.json"
+      }
+    }
+  ]
 }

@@ -10,6 +10,7 @@ using CashFlowControl.Core.Application.Interfaces.Services;
 using MediatR;
 using CashFlowControl.Core.Application.Commands.Auth;
 using CashFlowControl.Core.Application.Queries.Auth;
+using CashFlowControl.Core.Application.Security.Helpers;
 
 
 namespace CashFlowControl.Core.Application.Services
@@ -68,15 +69,15 @@ namespace CashFlowControl.Core.Application.Services
             return refreshToken;
         }
 
-        public async Task<string> RefreshAccessTokenAsync(string refreshToken)
+        public async Task<Result<string>> RefreshAccessTokenAsync(string refreshToken)
         {
             var returnStoredToken = await _mediator.Send(new AuthGetRefreshTokenQuery(refreshToken), CancellationToken.None);
 
             var storedToken = returnStoredToken.Value;
             if (storedToken == null || storedToken.IsRevoked || storedToken.Expiration < DateTime.UtcNow)
-                throw new Exception("Invalid refresh token.");
+                return await Task.FromResult(Result<string>.ValidationFailure("Invalid refresh token."));
 
-            return GenerateAccessToken(storedToken.UserId);
+            return await Task.FromResult(Result<string>.Success(GenerateAccessToken(storedToken.UserId)));
         }
     }
 }

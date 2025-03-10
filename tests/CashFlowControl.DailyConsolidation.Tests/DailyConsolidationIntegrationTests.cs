@@ -4,6 +4,7 @@ using CashFlowControl.Core.Application.Interfaces.Services;
 using CashFlowControl.Core.Application.Services;
 using CashFlowControl.Core.Domain.Entities;
 using CashFlowControl.Core.Domain.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -16,6 +17,7 @@ namespace CashFlowControl.DailyConsolidation.Tests
         private readonly Mock<ITransactionHttpClientService> _mockTransactionHttpClientService;
         private readonly Mock<IConsolidatedBalanceRepository> _mockBalanceRepo;
         private readonly Mock<ILogger<DailyConsolidationService>> _mockLogger;
+        private readonly Mock<IMediator> _mediator;
 
         private readonly HttpClient _client;
         private readonly IDailyConsolidationService _dailyConsolidationService;
@@ -26,11 +28,12 @@ namespace CashFlowControl.DailyConsolidation.Tests
             _mockTransactionHttpClientService = new Mock<ITransactionHttpClientService>();
             _mockBalanceRepo = new Mock<IConsolidatedBalanceRepository>();
             _mockLogger = new Mock<ILogger<DailyConsolidationService>>();
+            _mediator = new Mock<IMediator>(); 
 
             var webAppFactory = new WebApplicationFactory<Program>(); 
             _client = webAppFactory.CreateClient();
 
-            _dailyConsolidationService = new DailyConsolidationService(_mockTransactionHttpClientService.Object, _mockBalanceRepo.Object, _mockLogger.Object);
+            _dailyConsolidationService = new DailyConsolidationService(_mockTransactionHttpClientService.Object, _mockBalanceRepo.Object, _mockLogger.Object, _mediator.Object);
         }
 
         [Fact]
@@ -88,8 +91,8 @@ namespace CashFlowControl.DailyConsolidation.Tests
 
             // Assert - Verificar se o saldo foi consolidado corretamente
             var consolidatedBalance = await _dailyConsolidationService.GetConsolidatedBalanceByDateAsync(mappedTransaction.CreatedAt.Date);
-            Assert.NotNull(consolidatedBalance);
-            Assert.Equal(100, consolidatedBalance);
+            Assert.NotNull(consolidatedBalance.Value);
+            Assert.Equal(100, consolidatedBalance.Value.ConsolidatedBalance.TotalCredit);
         }
     }
 

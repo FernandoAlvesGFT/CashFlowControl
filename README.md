@@ -45,6 +45,9 @@ Durante o desenvolvimento, algumas decisões foram tomadas para garantir a escal
 
 - Certifique-se de que o banco de dados está configurado corretamente. O **Entity Framework Core** será utilizado para realizar a migração do banco de dados durante a execução inicial.
 - Você pode configurar o banco de dados diretamente ou usar o Docker para inicializar o banco em um contêiner.
+- Durante a criação do banco de dados também já estamos criando um usuário ADM para autenticação:
+  Usuário: admin@cashflowcontrol.com
+  Senha: Admin@123
 
 ### 2. Configuração das Dependências
 
@@ -56,6 +59,7 @@ Durante o desenvolvimento, algumas decisões foram tomadas para garantir a escal
   **Exemplo de execução do Docker Compose:**
   ```bash
   docker-compose up --build
+
 
 ### 3. Testes
 

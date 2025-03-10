@@ -1,4 +1,5 @@
 ﻿using CashFlowControl.Core.Application.DTOs;
+using CashFlowControl.Core.Application.Security.Helpers;
 
 namespace CashFlowControl.Core.Application.Interfaces.Services
 {
@@ -6,6 +7,6 @@ namespace CashFlowControl.Core.Application.Interfaces.Services
     {
         Task ProcessTransactionAsync(CreateTransactionDTO transaction);
         Task ConsolidateDailyBalanceAsync(DateTime date);
-        Task<decimal?> GetConsolidatedBalanceByDateAsync(DateTime date);
+        Task<Result<ConsolidatedBalanceDayDTO?>> GetConsolidatedBalanceByDateAsync(DateTime date);
     }
 }

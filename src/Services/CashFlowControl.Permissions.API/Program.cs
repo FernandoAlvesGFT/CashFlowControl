@@ -41,9 +41,10 @@ app.UseCors("AllowAllOrigins");
 
 app.UseSerilogRequestLogging();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseForwardedHeaders();
 
 app.Run();

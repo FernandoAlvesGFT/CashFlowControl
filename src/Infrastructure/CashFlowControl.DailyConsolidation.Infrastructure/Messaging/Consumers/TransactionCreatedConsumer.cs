@@ -48,13 +48,11 @@ namespace CashFlowControl.DailyConsolidation.Infrastructure.Messaging.Consumers
                 await _dailyConsolidationService.ProcessTransactionAsync(createTransactionDTO);
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 var transactionCreatedFailed = _mapper.Map<TransactionCreatedFailedDTO>(transaction);
 
                 await _messageBus.Publish(transactionCreatedFailed);
-
-                throw;
             }
 
             await Task.CompletedTask;
